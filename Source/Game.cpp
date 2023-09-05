@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "PlayerShip.h"
 #include <SDL.h>
 #include <string>
 #include <stdexcept>
@@ -38,6 +39,9 @@ Game::~Game()
 
 void Game::run()
 {
+	const SDL_Point screenCenter = { windowWidth / 2, windowHeight / 2 };
+	PlayerShip playerShip(screenCenter);
+
 	//Game loop
 	bool isRunning = true;
 	while (isRunning)
@@ -55,6 +59,9 @@ void Game::run()
 		//Rendering
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
+
+		playerShip.render(renderer);
+
 		SDL_RenderPresent(renderer);
 	}
 }

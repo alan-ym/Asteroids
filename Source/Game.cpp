@@ -1,6 +1,5 @@
 #include "Game.h"
 #include "PlayerShip.h"
-#include <SDL.h>
 #include <string>
 #include <stdexcept>
 
@@ -46,6 +45,11 @@ void Game::run()
 	bool isRunning = true;
 	while (isRunning)
 	{
+		//Calculate delta time
+		lastFrameTime = currentFrameTime;
+		currentFrameTime = SDL_GetTicks64();
+		float deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f;
+
 		//Input Handling
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -54,7 +58,12 @@ void Game::run()
 			{
 				isRunning = false;
 			}
+
+			playerShip.handleInput(event);
 		}
+
+		//Game Logic
+		playerShip.update(deltaTime);
 
 		//Rendering
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

@@ -1,7 +1,6 @@
 #pragma once
 
-struct SDL_Window;
-struct SDL_Renderer;
+#include <SDL.h>
 
 class Game
 {
@@ -21,4 +20,7 @@ private:
 
 	static const int windowWidth = 1024;
 	static const int windowHeight = 768;
+
+	Uint64 lastFrameTime = 0;
+	Uint64 currentFrameTime = 0;
 };

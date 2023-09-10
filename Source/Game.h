@@ -14,12 +14,12 @@ public:
 	//Starts the game loop.
 	void run();
 
+	static const int windowWidth = 1024;
+	static const int windowHeight = 768;
+
 private:
 	SDL_Window* window = nullptr;
 	SDL_Renderer* renderer = nullptr;
-
-	static const int windowWidth = 1024;
-	static const int windowHeight = 768;
 
 	Uint64 lastFrameTime = 0;
 	Uint64 currentFrameTime = 0;

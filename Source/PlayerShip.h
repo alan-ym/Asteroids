@@ -1,12 +1,13 @@
 #pragma once
 
+#include "Vector2D.h"
 #include <SDL.h>
 
 class PlayerShip
 {
 public:
 	PlayerShip() {};
-	PlayerShip(const SDL_Point& startingLocation) : location(startingLocation) {};
+	PlayerShip(const Vector2D& startingLocation) : location(startingLocation) {};
 
 	void handleInput(const SDL_Event& event);
 
@@ -17,15 +18,19 @@ public:
 	void render(SDL_Renderer* renderer) const;
 
 private:
+	Vector2D location = { 0.0f, 0.0f };
+	Vector2D velocity = { 0.0f, 0.0f };
+	float rotation = 0.0f;
+
+	bool thrustInput = false;
+	float rotationInput = 0.0f; //Input axis (-1.0f to 1.0f)
+
+	static const float thrustAcceleration;
+	static const float dragCoefficient;
+	static const float rotationSpeed; //In degrees/second
+
 	//The points that define the shape of the ship
 	static const SDL_Point drawPoints[];
 
-	SDL_Point location = { 0, 0 };
-	float rotation = 0.0f;
-
-	//Rotation speed (in degrees/second)
-	float rotationSpeed = 360.0f;
-
-	//Rotation input axis (-1.0f to 1.0f)
-	float rotationInput = 0.0f;
+	void wrapLocationToScreen();
 };

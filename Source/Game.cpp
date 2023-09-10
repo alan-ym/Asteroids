@@ -38,7 +38,7 @@ Game::~Game()
 
 void Game::run()
 {
-	const SDL_Point screenCenter = { windowWidth / 2, windowHeight / 2 };
+	const Vector2D screenCenter(windowWidth / 2, windowHeight / 2);
 	PlayerShip playerShip(screenCenter);
 
 	//Game loop

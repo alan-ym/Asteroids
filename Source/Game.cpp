@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "PlayerShip.h"
+#include "Asteroid.h"
 #include <string>
 #include <stdexcept>
 
@@ -41,6 +42,9 @@ void Game::run()
 	const Vector2D screenCenter(windowWidth / 2, windowHeight / 2);
 	PlayerShip playerShip(screenCenter);
 
+	const Vector2D testAsteroidLocation(windowWidth / 4, windowHeight / 2);
+	Asteroid testAsteroid(testAsteroidLocation, AsteroidRadius::Large);
+
 	//Game loop
 	bool isRunning = true;
 	while (isRunning)
@@ -64,12 +68,14 @@ void Game::run()
 
 		//Game Logic
 		playerShip.update(deltaTime);
+		testAsteroid.update(deltaTime);
 
 		//Rendering
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
 		playerShip.render(renderer);
+		testAsteroid.render(renderer);
 
 		SDL_RenderPresent(renderer);
 	}

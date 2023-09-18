@@ -4,6 +4,7 @@
 const float PlayerShip::thrustAcceleration = 500.0f;
 const float PlayerShip::dragCoefficient = 0.5f;
 const float PlayerShip::rotationSpeed = 270.0f;
+const float PlayerShip::projectileSpeed = 500.0f;
 const SDL_Point PlayerShip::drawPoints[] = { { 0, -20 }, { 10, 10 }, { 5, 5 }, { -5, 5 }, { -10, 10 }, { 0, -20 } };
 
 void PlayerShip::handleInput(const SDL_Event& event)
@@ -12,6 +13,9 @@ void PlayerShip::handleInput(const SDL_Event& event)
 	{
 		switch (event.key.keysym.scancode)
 		{
+		case SDL_SCANCODE_SPACE:
+			fireInput = event.key.state == SDL_PRESSED;
+			break;
 		case SDL_SCANCODE_W:
 			thrustInput = event.key.state == SDL_PRESSED;
 			break;
@@ -27,12 +31,23 @@ void PlayerShip::handleInput(const SDL_Event& event)
 
 void PlayerShip::update(const float& deltaTime)
 {
+	//Calculate forward vector
+	const float rotationRadians = rotation * 0.01745329251f;
+	const Vector2D forwardUnitVector(std::sin(rotationRadians), -std::cos(rotationRadians));
+
+	//Fire projectile
+	if (fireInput)
+	{
+		const Vector2D projectileSpawnLocation = location + (forwardUnitVector * 20);
+		const Vector2D projectileVelocity = velocity + (forwardUnitVector * projectileSpeed);
+		game->spawnProjectile(projectileSpawnLocation, projectileVelocity);
+		fireInput = false;
+	}
+
 	//Update rotation
 	rotation += rotationInput * rotationSpeed * deltaTime;
 
 	//Apply acceleration to velocity
-	const float rotationRadians = rotation * 0.01745329251f;
-	const Vector2D forwardUnitVector(std::sin(rotationRadians), -std::cos(rotationRadians));
 	const Vector2D accelerationVector = thrustInput ? forwardUnitVector * thrustAcceleration : Vector2D(0.0f, 0.0f);
 	velocity += accelerationVector * deltaTime;
 

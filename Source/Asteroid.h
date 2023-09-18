@@ -15,9 +15,9 @@ class Asteroid : public GameObject
 public:
 	Asteroid(const Vector2D& startingLocation, const AsteroidRadius& inRadius);
 
-	void update(const float& deltaTime);
+	void update(const float& deltaTime) override;
 
-	void render(SDL_Renderer* renderer) const;
+	void render(SDL_Renderer* renderer) const override;
 
 private:
 	const int radius;

@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "PlayerShip.h"
 #include "Asteroid.h"
+#include "Projectile.h"
 #include <string>
 #include <stdexcept>
 
@@ -32,6 +33,12 @@ Game::Game()
 
 Game::~Game()
 {
+	//Deallocate all game objects
+	for (GameObject* gameObject : gameObjects)
+	{
+		delete gameObject;
+	}
+
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -39,14 +46,18 @@ Game::~Game()
 
 void Game::run()
 {
+	//Create player ship
 	const Vector2D screenCenter(windowWidth / 2, windowHeight / 2);
-	PlayerShip playerShip(screenCenter);
+	playerShip = new PlayerShip(screenCenter, this);
+	gameObjects.push_back(playerShip);
 
-	const Vector2D testAsteroidLocation(windowWidth / 4, windowHeight / 2);
-	Asteroid testAsteroid(testAsteroidLocation, AsteroidRadius::Large);
+	//Create test asteroids
+	const Vector2D testAsteroidOneLocation(windowWidth / 4, windowHeight / 2);
+	gameObjects.push_back(new Asteroid(testAsteroidOneLocation, AsteroidRadius::Large));
+	const Vector2D testAsteroidTwoLocation((windowWidth / 4) * 3, windowHeight / 2);
+	gameObjects.push_back(new Asteroid(testAsteroidTwoLocation, AsteroidRadius::Large));
 
 	//Game loop
-	bool isRunning = true;
 	while (isRunning)
 	{
 		//Calculate delta time
@@ -54,29 +65,70 @@ void Game::run()
 		currentFrameTime = SDL_GetTicks64();
 		float deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f;
 
-		//Input Handling
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT)
-			{
-				isRunning = false;
-			}
-
-			playerShip.handleInput(event);
-		}
-
-		//Game Logic
-		playerShip.update(deltaTime);
-		testAsteroid.update(deltaTime);
-
-		//Rendering
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
-
-		playerShip.render(renderer);
-		testAsteroid.render(renderer);
-
-		SDL_RenderPresent(renderer);
+		handleInput();
+		update(deltaTime);
+		render();
 	}
+}
+
+void Game::spawnProjectile(const Vector2D& location, const Vector2D& velocity)
+{
+	pendingObjects.push_back(new Projectile(location, velocity));
+}
+
+void Game::handleInput()
+{
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		playerShip->handleInput(event);
+
+		if (event.type == SDL_QUIT)
+		{
+			isRunning = false;
+		}
+	}
+}
+
+void Game::update(const float& deltaTime)
+{
+	//Update all game objects
+	for (GameObject* gameObject : gameObjects)
+	{
+		gameObject->update(deltaTime);
+	}
+
+	//Remove and deallocate all dead game objects
+	std::vector<GameObject*>::iterator it = gameObjects.begin();
+	while(it != gameObjects.end())
+	{
+		GameObject* gameObject = *it;
+		if (!gameObject->getIsAlive())
+		{
+			delete gameObject;
+			it = gameObjects.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+
+	//Add newly spawned game objects
+	gameObjects.insert(gameObjects.end(), pendingObjects.begin(), pendingObjects.end());
+	pendingObjects.clear();
+}
+
+void Game::render() const
+{
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderClear(renderer);
+	
+	//Render all game objects
+	for (GameObject* gameObject : gameObjects)
+	{
+		gameObject->render(renderer);
+	}
+
+	SDL_RenderPresent(renderer);
 }

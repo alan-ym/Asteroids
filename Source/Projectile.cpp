@@ -18,6 +18,7 @@ void Projectile::update(const float& deltaTime)
 void Projectile::render(SDL_Renderer* renderer) const
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	const SDL_Rect drawRect = { static_cast<int>(location.x) - radius, static_cast<int>(location.y) - radius, radius * 2, radius * 2 };
+	const int drawWidth = static_cast<int>(radius * 2);
+	const SDL_Rect drawRect = { static_cast<int>(location.x - radius), static_cast<int>(location.y - radius), drawWidth, drawWidth };
 	SDL_RenderFillRect(renderer, &drawRect);
 }

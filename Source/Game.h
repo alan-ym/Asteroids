@@ -38,6 +38,9 @@ private:
 	std::vector<GameObject*> gameObjects;
 	std::vector<GameObject*> pendingObjects;
 
+	bool shouldResetGame = false;
+	void resetGame();
+
 	void handleInput();
 	void update(const float& deltaTime);
 	void render() const;

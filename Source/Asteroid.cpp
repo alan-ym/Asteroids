@@ -1,7 +1,7 @@
 #include "Asteroid.h"
 #include <cmath>
 
-Asteroid::Asteroid(const Vector2D& startingLocation, const AsteroidRadius& inRadius) : GameObject(startingLocation), radius(static_cast<int>(inRadius))
+Asteroid::Asteroid(const Vector2D& startingLocation, const AsteroidRadius& inRadius) : GameObject(startingLocation), radius(inRadius)
 {
 	//Generate random velocity
 	//(Using default-seeded rand() for simple rng, could be improved later)
@@ -11,16 +11,17 @@ Asteroid::Asteroid(const Vector2D& startingLocation, const AsteroidRadius& inRad
 	velocity = Vector2D(std::sin(velocityAngle), std::cos(velocityAngle)) * speed;
 
 	//Generate draw points for the asteroid
+	float drawRadius = static_cast<float>(radius);
 	for (int i = 0; i < numDrawPoints - 1; i++)
 	{
 		//Add random variation by adjusting each point's distance from the asteroid's center
-		const float variationRange = radius * 0.5f;
+		const float variationRange = drawRadius * 0.5f;
 		const float variation = ((rand() / static_cast<float>(RAND_MAX)) * variationRange) - (variationRange * 0.5f);
 
 		//Add points in a circle around the asteroid's center
 		const float centralAngle = (i / static_cast<float>(numDrawPoints - 1)) * 6.28318530718f;
-		const int pointX = static_cast<int>(std::sin(centralAngle) * (radius + variation));
-		const int pointY = static_cast<int>(std::cos(centralAngle) * (radius + variation));
+		const int pointX = static_cast<int>(std::sin(centralAngle) * (drawRadius + variation));
+		const int pointY = static_cast<int>(std::cos(centralAngle) * (drawRadius + variation));
 		drawPoints[i] = { pointX, pointY };
 	}
 	//Include the first point again as the last element to close the shape
@@ -39,7 +40,9 @@ void Asteroid::render(SDL_Renderer* renderer) const
 	SDL_Point adjustedDrawPoints[numDrawPoints];
 	for (int i = 0; i < numDrawPoints; i++)
 	{
-		adjustedDrawPoints[i] = { static_cast<int>(std::round(drawPoints[i].x + location.x)), static_cast<int>(std::round(drawPoints[i].y + location.y)) };
+		const int adjustedX = static_cast<int>(std::round(drawPoints[i].x + location.x));
+		const int adjustedY = static_cast<int>(std::round(drawPoints[i].y + location.y));
+		adjustedDrawPoints[i] = { adjustedX, adjustedY };
 	};
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);

@@ -19,8 +19,12 @@ public:
 
 	void render(SDL_Renderer* renderer) const override;
 
+	AsteroidRadius getRadius() const { return radius; }
+
+	float getCircleCollisionRadius() const override { return static_cast<float>(radius); }
+
 private:
-	const int radius;
+	const AsteroidRadius radius;
 
 	static const int minSpeed = 10;
 	static const int maxSpeed = 50;

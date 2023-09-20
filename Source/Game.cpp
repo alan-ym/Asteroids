@@ -46,16 +46,7 @@ Game::~Game()
 
 void Game::run()
 {
-	//Create player ship
-	const Vector2D screenCenter(windowWidth / 2, windowHeight / 2);
-	playerShip = new PlayerShip(screenCenter, this);
-	gameObjects.push_back(playerShip);
-
-	//Create test asteroids
-	const Vector2D testAsteroidOneLocation(windowWidth / 4, windowHeight / 2);
-	gameObjects.push_back(new Asteroid(testAsteroidOneLocation, AsteroidRadius::Large));
-	const Vector2D testAsteroidTwoLocation((windowWidth / 4) * 3, windowHeight / 2);
-	gameObjects.push_back(new Asteroid(testAsteroidTwoLocation, AsteroidRadius::Large));
+	resetGame();
 
 	//Game loop
 	while (isRunning)
@@ -68,12 +59,43 @@ void Game::run()
 		handleInput();
 		update(deltaTime);
 		render();
+
+		if (shouldResetGame)
+		{
+			resetGame();
+		}
 	}
 }
 
 void Game::spawnProjectile(const Vector2D& location, const Vector2D& velocity)
 {
 	pendingObjects.push_back(new Projectile(location, velocity));
+}
+
+void Game::resetGame()
+{
+	//Deallocate and remove any existing game objects
+	if (!gameObjects.empty())
+	{
+		for (GameObject* gameObject : gameObjects)
+		{
+			delete gameObject;
+		}
+		gameObjects.clear();
+	}
+
+	//Create player ship
+	const Vector2D screenCenter(windowWidth / 2, windowHeight / 2);
+	playerShip = new PlayerShip(screenCenter, this);
+	gameObjects.push_back(playerShip);
+
+	//Create test asteroids
+	const Vector2D testAsteroidOneLocation(windowWidth / 4, windowHeight / 2);
+	gameObjects.push_back(new Asteroid(testAsteroidOneLocation, AsteroidRadius::Large));
+	const Vector2D testAsteroidTwoLocation((windowWidth / 4) * 3, windowHeight / 2);
+	gameObjects.push_back(new Asteroid(testAsteroidTwoLocation, AsteroidRadius::Large));
+
+	shouldResetGame = false;
 }
 
 void Game::handleInput()
@@ -98,7 +120,54 @@ void Game::update(const float& deltaTime)
 		gameObject->update(deltaTime);
 	}
 
-	//Remove and deallocate all dead game objects
+	//Handle collisions
+	for (GameObject* gameObject : gameObjects)
+	{
+		if (Asteroid* asteroid = dynamic_cast<Asteroid*>(gameObject))
+		{
+			for (GameObject* other : gameObjects)
+			{
+				//Check for collisions between asteroids and the player ship
+				if (other == playerShip)
+				{
+					if (asteroid->checkForCircleCollision(playerShip))
+					{
+						shouldResetGame = true;
+						break;
+					}
+				}
+
+				//Check for collisions between asteroids and projectiles
+				if (Projectile* projectile = dynamic_cast<Projectile*>(other))
+				{
+					if (asteroid->checkForCircleCollision(projectile))
+					{
+						asteroid->setIsAlive(false);
+						projectile->setIsAlive(false);
+
+						//Spawn new asteroids
+						switch (asteroid->getRadius())
+						{
+						case AsteroidRadius::Large:
+							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Medium));
+							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Medium));
+							break;
+						case AsteroidRadius::Medium:
+							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
+							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
+							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
+							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
+							break;
+						}
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	//Deallocate and remove all dead game objects
 	std::vector<GameObject*>::iterator it = gameObjects.begin();
 	while(it != gameObjects.end())
 	{

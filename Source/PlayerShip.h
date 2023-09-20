@@ -8,7 +8,7 @@
 class PlayerShip : public GameObject
 {
 public:
-	PlayerShip(const Vector2D& startingLocation, Game* const game) : GameObject(startingLocation), game(game) {};
+	PlayerShip(const Vector2D& startingLocation, Game* const game) : GameObject(startingLocation), game(game) {}
 
 	void handleInput(const SDL_Event& event);
 
@@ -16,18 +16,21 @@ public:
 
 	void render(SDL_Renderer* renderer) const override;
 
+	float getCircleCollisionRadius() const override { return circleCollisionRadius; }
+
 private:
 	bool thrustInput = false;
 	float rotationInput = 0.0f; //Input axis (-1.0f to 1.0f)
 	bool fireInput = false;
 
+	Game* const game;
+
 	static const float thrustAcceleration;
 	static const float dragCoefficient;
 	static const float rotationSpeed; //In degrees/second
 	static const float projectileSpeed;
+	static const float circleCollisionRadius;
 
 	//The points that define the shape of the ship
 	static const SDL_Point drawPoints[];
-
-	Game* const game;
 };

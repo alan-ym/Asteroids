@@ -3,8 +3,9 @@
 
 const float PlayerShip::thrustAcceleration = 500.0f;
 const float PlayerShip::dragCoefficient = 0.5f;
-const float PlayerShip::rotationSpeed = 270.0f;
+const float PlayerShip::rotationSpeed = 180.0f;
 const float PlayerShip::projectileSpeed = 500.0f;
+const float PlayerShip::circleCollisionRadius = 10.0f;
 const SDL_Point PlayerShip::drawPoints[] = { { 0, -20 }, { 10, 10 }, { 5, 5 }, { -5, 5 }, { -10, 10 }, { 0, -20 } };
 
 void PlayerShip::handleInput(const SDL_Event& event)

@@ -33,6 +33,9 @@ private:
 	Uint64 lastFrameTime = 0;
 	Uint64 currentFrameTime = 0;
 
+	int currentWave = 1;
+	int asteroidCount = 0;
+
 	PlayerShip* playerShip = nullptr;
 
 	std::vector<GameObject*> gameObjects;
@@ -40,6 +43,8 @@ private:
 
 	bool shouldResetGame = false;
 	void resetGame();
+
+	void spawnAsteroid();
 
 	void handleInput();
 	void update(const float& deltaTime);

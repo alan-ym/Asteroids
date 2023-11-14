@@ -19,6 +19,7 @@ public:
 	void setIsAlive(const bool& inIsAlive) { isAlive = inIsAlive; }
 
 	Vector2D getLocation() const { return location; }
+	float getRotation() const { return rotation; }
 
 	bool checkForCircleCollision(const GameObject* const other) const;
 	virtual float getCircleCollisionRadius() const { return 0.0f; }

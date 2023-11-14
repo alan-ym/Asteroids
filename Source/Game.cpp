@@ -4,6 +4,7 @@
 #include "Projectile.h"
 #include <string>
 #include <stdexcept>
+#include <cmath>
 
 Game::Game()
 {
@@ -89,13 +90,36 @@ void Game::resetGame()
 	playerShip = new PlayerShip(screenCenter, this);
 	gameObjects.push_back(playerShip);
 
-	//Create test asteroids
-	const Vector2D testAsteroidOneLocation(windowWidth / 4, windowHeight / 2);
-	gameObjects.push_back(new Asteroid(testAsteroidOneLocation, AsteroidRadius::Large));
-	const Vector2D testAsteroidTwoLocation((windowWidth / 4) * 3, windowHeight / 2);
-	gameObjects.push_back(new Asteroid(testAsteroidTwoLocation, AsteroidRadius::Large));
+	//Spawn asteroids
+	spawnAsteroid();
+	spawnAsteroid();
+	spawnAsteroid();
+	spawnAsteroid();
 
 	shouldResetGame = false;
+}
+
+void Game::spawnAsteroid()
+{
+	//Get random distance from player, within safe range
+	//(Using default-seeded rand() for simple rng, could be improved later)
+	const int minDistance = static_cast<float>(AsteroidRadius::Large) * 6;
+	const int maxDistance = windowWidth * 0.5f;
+	const int distanceRange = maxDistance - minDistance;
+	const int distance = ((rand() / static_cast<float>(RAND_MAX)) * distanceRange) + minDistance;
+
+	//Get random angle from player, avoiding spawning directly ahead
+	const float minAngle = playerShip->getRotation() + 45.0f;
+	const float maxAngle = playerShip->getRotation() + 315.0f;
+	const float angleRange = maxAngle - minAngle;
+	const float angle = ((rand() / static_cast<float>(RAND_MAX)) * angleRange) + minAngle;
+	const float angleRadians = angle * 0.01745329251f;
+
+	//Create asteroid
+	const Vector2D playerToAsteroidVector = Vector2D(std::sin(angleRadians), -std::cos(angleRadians)) * distance;
+	const Vector2D asteroidLocation = playerShip->getLocation() + playerToAsteroidVector;
+	gameObjects.push_back(new Asteroid(asteroidLocation, AsteroidRadius::Large));
+	asteroidCount++;
 }
 
 void Game::handleInput()
@@ -144,6 +168,7 @@ void Game::update(const float& deltaTime)
 					{
 						asteroid->setIsAlive(false);
 						projectile->setIsAlive(false);
+						asteroidCount--;
 
 						//Spawn new asteroids
 						switch (asteroid->getRadius())
@@ -151,12 +176,12 @@ void Game::update(const float& deltaTime)
 						case AsteroidRadius::Large:
 							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Medium));
 							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Medium));
+							asteroidCount += 2;
 							break;
 						case AsteroidRadius::Medium:
 							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
 							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
-							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
-							pendingObjects.push_back(new Asteroid(asteroid->getLocation(), AsteroidRadius::Small));
+							asteroidCount += 2;
 							break;
 						}
 
@@ -186,6 +211,17 @@ void Game::update(const float& deltaTime)
 	//Add newly spawned game objects
 	gameObjects.insert(gameObjects.end(), pendingObjects.begin(), pendingObjects.end());
 	pendingObjects.clear();
+
+	//Spawn a new wave of asteroids when all asteroids have been destroyed
+	if (asteroidCount < 1)
+	{
+		currentWave++;
+		const int asteroidsToSpawn = (currentWave * 2) + 2;
+		for (int i = 0; i < asteroidsToSpawn; i++)
+		{
+			spawnAsteroid();
+		}
+	}
 }
 
 void Game::render() const
